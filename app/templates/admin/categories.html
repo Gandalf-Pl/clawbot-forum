@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}分类管理 - OpenClaw 论坛{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- 侧边栏导航 -->
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-speedometer2"></i> 管理菜单</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-house"></i> 仪表盘
+                </a>
+                <a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-people"></i> 用户管理
+                </a>
+                <a href="{{ url_for('admin.posts') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-file-text"></i> 帖子管理
+                </a>
+                <a href="{{ url_for('admin.comments') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-chat-dots"></i> 评论管理
+                </a>
+                <a href="{{ url_for('admin.categories') }}" class="list-group-item list-group-item-action active">
+                    <i class="bi bi-folder"></i> 分类管理
+                </a>
+                <a href="{{ url_for('admin.admin_tags') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-tags"></i> 标签管理
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="col-md-9">
+        <h2 class="mb-4"><i class="bi bi-folder"></i> 分类管理</h2>
+        
+        <!-- 添加新分类 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> 添加新分类</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('admin.create_category') }}" method="POST">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="name" placeholder="分类名称" required>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control" name="description" placeholder="分类描述">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" class="form-control" name="sort_order" placeholder="排序" value="0">
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 分类列表 -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                {% if categories %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>排序</th>
+                                <th>名称</th>
+                                <th>描述</th>
+                                <th>帖子数</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in categories %}
+                            <tr>
+                                <form action="{{ url_for('admin.edit_category', id=category.id) }}" method="POST">
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm" name="sort_order" 
+                                               value="{{ category.sort_order }}" style="width: 70px;">
+                                    </td>
+                                    
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm" name="name" 
+                                               value="{{ category.name }}" required>
+                                    </td>
+                                    
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm" name="description" 
+                                               value="{{ category.description }}">
+                                    </td>
+                                    
+                                    <td>
+                                        <span class="badge bg-secondary">{{ category.post_count }}</span>
+                                    </td>
+                                    
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="is_active" 
+                                                   id="active{{ category.id }}" {{ 'checked' if category.is_active else '' }}>
+                                            <label class="form-check-label" for="active{{ category.id }}">
+                                                {{ '启用' if category.is_active else '禁用' }}
+                                            </label>
+                                        </div>
+                                    </td>
+                                    
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="submit" class="btn btn-outline-primary" title="保存">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                            
+                                            {% if category.post_count == 0 %}
+                                            <form action="{{ url_for('admin.delete_category', id=category.id) }}" method="POST" class="d-inline"
+                                                  onsubmit="return confirm('确定要删除分类 {{ category.name }} 吗？');">
+                                                <button type="submit" class="btn btn-outline-danger" title="删除">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </form>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox display-4"></i>
+                    <p class="mt-3">暂无分类</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}注册 - OpenClaw 论坛{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white text-center">
+                <h4 class="mb-0"><i class="bi bi-person-plus"></i> 用户注册</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('auth.register') }}" novalidate id="registerForm">
+                    <!-- 用户名 -->
+                    <div class="mb-3">
+                        <label for="username" class="form-label">用户名 *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   placeholder="3-20个字符，支持字母、数字、下划线和中文" 
+                                   value="{{ username if username else '' }}"
+                                   required minlength="3" maxlength="20"
+                                   pattern="^[a-zA-Z0-9_\u4e00-\u9fa5]+$">
+                            <span class="input-group-text d-none" id="usernameStatus">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                            </span>
+                        </div>
+                        <div class="form-text" id="usernameHelp">用户名只能包含字母、数字、下划线和中文</div>
+                    </div>
+                    
+                    <!-- 邮箱 -->
+                    <div class="mb-3">
+                        <label for="email" class="form-label">邮箱地址 *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="example@email.com"
+                                   value="{{ email if email else '' }}"
+                                   required>
+                            <span class="input-group-text d-none" id="emailStatus">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- 密码 -->
+                    <div class="mb-3">
+                        <label for="password" class="form-label">密码 *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="至少6个字符" required minlength="6">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="progress mt-2" style="height: 5px;">
+                            <div class="progress-bar" id="passwordStrength" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted" id="passwordStrengthText">密码强度</small>
+                    </div>
+                    
+                    <!-- 确认密码 -->
+                    <div class="mb-4">
+                        <label for="password_confirm" class="form-label">确认密码 *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                            <input type="password" class="form-control" id="password_confirm" name="password_confirm" 
+                                   placeholder="请再次输入密码" required>
+                        </div>
+                        <div class="invalid-feedback" id="passwordMatchFeedback">两次输入的密码不一致</div>
+                    </div>
+                    
+                    <!-- 注册按钮 -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                            <i class="bi bi-person-plus"></i> 注册
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="mb-0">已有账号？<a href="{{ url_for('auth.login') }}">立即登录</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 切换密码显示/隐藏
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const icon = this.querySelector('i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    });
+
+    // 密码强度检测
+    document.getElementById('password').addEventListener('input', function() {
+        const password = this.value;
+        const strengthBar = document.getElementById('passwordStrength');
+        const strengthText = document.getElementById('passwordStrengthText');
+        
+        let strength = 0;
+        if (password.length >= 6) strength += 20;
+        if (password.length >= 10) strength += 20;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 20;
+        if (/[0-9]/.test(password)) strength += 20;
+        if (/[^a-zA-Z0-9]/.test(password)) strength += 20;
+        
+        strengthBar.style.width = strength + '%';
+        
+        if (strength < 40) {
+            strengthBar.className = 'progress-bar bg-danger';
+            strengthText.textContent = '密码强度：弱';
+        } else if (strength < 80) {
+            strengthBar.className = 'progress-bar bg-warning';
+            strengthText.textContent = '密码强度：中';
+        } else {
+            strengthBar.className = 'progress-bar bg-success';
+            strengthText.textContent = '密码强度：强';
+        }
+    });
+
+    // 密码匹配验证
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('password_confirm').value;
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            document.getElementById('password_confirm').classList.add('is-invalid');
+            document.getElementById('passwordMatchFeedback').style.display = 'block';
+        }
+    });
+
+    // 实时检查用户名
+    let usernameTimeout;
+    document.getElementById('username').addEventListener('input', function() {
+        clearTimeout(usernameTimeout);
+        const username = this.value;
+        const statusEl = document.getElementById('usernameStatus');
+        
+        if (username.length >= 3) {
+            usernameTimeout = setTimeout(() => {
+                fetch(`/api/check-username?username=${encodeURIComponent(username)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        statusEl.classList.remove('d-none');
+                        if (data.available) {
+                            statusEl.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+                        } else {
+                            statusEl.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+                        }
+                    });
+            }, 500);
+        } else {
+            statusEl.classList.add('d-none');
+        }
+    });
+</script>
+{% endblock %}

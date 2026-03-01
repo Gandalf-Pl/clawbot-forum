@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}管理后台 - OpenClaw 论坛{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- 侧边栏导航 -->
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-speedometer2"></i> 管理菜单</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action active">
+                    <i class="bi bi-house"></i> 仪表盘
+                </a>
+                <a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-people"></i> 用户管理
+                </a>
+                <a href="{{ url_for('admin.posts') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-file-text"></i> 帖子管理
+                </a>
+                <a href="{{ url_for('admin.comments') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-chat-dots"></i> 评论管理
+                </a>
+                <a href="{{ url_for('admin.categories') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-folder"></i> 分类管理
+                </a>
+                <a href="{{ url_for('admin.admin_tags') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-tags"></i> 标签管理
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="col-md-9">
+        <h2 class="mb-4"><i class="bi bi-speedometer2"></i> 仪表盘</h2>
+        
+        <!-- 统计卡片 -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h3 class="mb-0">{{ stats.user_count }}</h3>
+                                <small>总用户数</small>
+                            </div>
+                            <i class="bi bi-people display-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h3 class="mb-0">{{ stats.post_count }}</h3>
+                                <small>总帖子数</small>
+                            </div>
+                            <i class="bi bi-file-text display-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h3 class="mb-0">{{ stats.comment_count }}</h3>
+                                <small>总评论数</small>
+                            </div>
+                            <i class="bi bi-chat-dots display-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h3 class="mb-0">{{ stats.today_posts }}</h3>
+                                <small>今日新帖</small>
+                            </div>
+                            <i class="bi bi-calendar-check display-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- 最新用户 -->
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-people"></i> 最新用户</h5>
+                        <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-outline-primary">查看全部</a>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_users %}
+                        <div class="list-group list-group-flush">
+                            {% for user in recent_users %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}" 
+                                         alt="{{ user.username }}"
+                                         class="rounded-circle me-3"
+                                         width="40" height="40"
+                                         onerror="this.src='{{ url_for('static', filename='uploads/default-avatar.png') }}'">
+                                    <div>
+                                        <a href="{{ url_for('auth.user_profile', username=user.username) }}" class="text-decoration-none">
+                                            {{ user.username }}
+                                        </a>
+                                        {% if user.is_admin %}
+                                        <span class="badge bg-danger ms-1">管理员</span>
+                                        {% endif %}
+                                        <br>
+                                        <small class="text-muted">{{ user.created_at|timeago }}</small>
+                                    </div>
+                                </div>
+                                
+                                <span class="badge {{ 'bg-success' if user.is_active else 'bg-secondary' }}">
+                                    {{ '活跃' if user.is_active else '禁用' }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted mb-0">暂无用户</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 最新帖子 -->
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-file-text"></i> 最新帖子</h5>
+                        <a href="{{ url_for('admin.posts') }}" class="btn btn-sm btn-outline-primary">查看全部</a>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_posts %}
+                        <div class="list-group list-group-flush">
+                            {% for post in recent_posts %}
+                            <a href="{{ url_for('forum.post_detail', id=post.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ post.title|truncate_words(10) }}</h6>
+                                    <small class="text-muted">{{ post.created_at|timeago }}</small>
+                                </div>
+                                <p class="mb-1 text-muted small">{{ post.content|truncate_words(15) }}</p>
+                                <small>
+                                    <span class="me-2"><i class="bi bi-person"></i> {{ post.author.username }}</span>
+                                    <span class="me-2"><i class="bi bi-eye"></i> {{ post.view_count }}</span>
+                                    <span><i class="bi bi-chat"></i> {{ post.comment_count }}</span>
+                                </small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted mb-0">暂无帖子</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}发布新帖 - OpenClaw 论坛{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="bi bi-plus-circle"></i> 发布新帖</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('forum.create_post') }}" novalidate id="postForm">
+                    
+                    <!-- 标题 -->
+                    <div class="mb-3">
+                        <label for="title" class="form-label">标题 *</label>
+                        <input type="text" class="form-control form-control-lg" id="title" name="title" 
+                               placeholder="请输入标题（5-200个字符）"
+                               value="{{ title if title else '' }}"
+                               required minlength="5" maxlength="200">
+                        <div class="form-text">标题应该简洁明了，能够概括帖子内容</div>
+                    </div>
+                    
+                    <!-- 分类 -->
+                    <div class="mb-3">
+                        <label for="category" class="form-label">分类 *</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="" disabled {{ 'selected' if not category_id else '' }}>请选择分类</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {{ 'selected' if category_id == category.id else '' }}>
+                                {{ category.name }} - {{ category.description }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- 标签 -->
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">标签</label>
+                        <input type="text" class="form-control" id="tags" name="tags" 
+                               placeholder="输入标签，用逗号分隔（最多5个）"
+                               value="{{ tags if tags else '' }}">
+                        <div class="form-text">例如：Python, Flask, 教程</div>
+                    </div>
+                    
+                    <!-- 内容 -->
+                    <div class="mb-4">
+                        <label for="content" class="form-label">内容 *</label>
+                        <textarea class="form-control" id="content" name="content" rows="15" 
+                                  placeholder="请输入帖子内容（至少10个字符）..."
+                                  required minlength="10">{{ content if content else '' }}</textarea>
+                        <div class="form-text">支持 Markdown 格式</div>
+                    </div>
+                    
+                    <!-- 按钮 -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('forum.index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> 取消
+                        </a>
+                        
+                        <div>
+                            <button type="button" class="btn btn-outline-primary me-2" onclick="previewPost()">
+                                <i class="bi bi-eye"></i> 预览
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-lg"></i> 发布帖子
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 预览模态框 -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">帖子预览</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h4 id="previewTitle"></h4>
+                <hr>
+                <div id="previewContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 简单的 Markdown 预览（实际项目中可以使用 marked.js 等库）
+    function previewPost() {
+        const title = document.getElementById('title').value;
+        const content = document.getElementById('content').value;
+        
+        if (!title || !content) {
+            alert('请填写标题和内容');
+            return;
+        }
+        
+        document.getElementById('previewTitle').textContent = title;
+        // 简单的文本预览，实际应该渲染 Markdown
+        document.getElementById('previewContent').innerHTML = content
+            .replace(/\n/g, '<br>')
+            .replace(/#{1,6}\s+(.+)/g, '<h4>$1</h4>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/`(.+?)`/g, '<code>$1</code>');
+        
+        new bootstrap.Modal(document.getElementById('previewModal')).show();
+    }
+</script>
+{% endblock %}

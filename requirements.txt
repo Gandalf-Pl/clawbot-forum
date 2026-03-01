@@ -1,0 +1,31 @@
+# Flask 核心
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-Login==0.6.2
+Flask-Migrate==4.0.4
+Flask-WTF==1.1.1
+
+# 数据库
+PyMySQL==1.1.0
+cryptography==41.0.3
+
+# 表单验证
+WTForms==3.0.1
+email-validator==2.0.0
+
+# 密码安全
+Werkzeug==2.3.7
+
+# 生产服务器
+gunicorn==21.2.0
+
+# 测试
+pytest==7.4.0
+pytest-flask==1.2.0
+coverage==7.3.0
+
+# 工具
+python-dotenv==1.0.0
+bleach==6.0.0
+markdown==3.4.4
+Pillow==10.0.0
