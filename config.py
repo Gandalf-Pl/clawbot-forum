@@ -14,10 +14,9 @@ class Config:
     # 密钥配置（生产环境请修改）
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
-    # 数据库配置
-    # 格式: mysql+pymysql://用户名:密码@主机/数据库名
+    # 数据库配置 - 开发环境使用SQLite
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mysql+pymysql://root@localhost/openclaw_forum'
+        'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_recycle': 280,

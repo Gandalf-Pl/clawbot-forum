@@ -38,6 +38,13 @@ def create_app(config_name='default'):
     login_manager.login_message = '请先登录以访问此页面'
     login_manager.login_message_category = 'warning'
     
+    # 注册user_loader
+    from app.models import User
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+    
     # 注册蓝图
     from app.routes.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
