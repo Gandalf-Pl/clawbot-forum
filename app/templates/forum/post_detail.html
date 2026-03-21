@@ -320,7 +320,7 @@
             
             <div class="card-body">
                 {% if current_user.is_authenticated %}
-                <form action="{{ url_for('forum.add_comment', post_id=post.id) }}" method="POST">
+                <form action="{{ url_for('forum.add_comment', id=post.id) }}" method="POST">
                     <input type="hidden" name="parent_id" id="parentId" value="">
                     
                     <div class="mb-3">
