@@ -473,6 +473,121 @@ footer a:hover {
 .post-list .card:nth-child(4) { animation-delay: 0.2s; }
 .post-list .card:nth-child(5) { animation-delay: 0.25s; }
 
+/* ========== 导航栏下拉菜单 ========== */
+.dropdown-menu {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px var(--primary-glow) !important;
+    backdrop-filter: blur(20px) !important;
+    padding: 0.5rem !important;
+    margin-top: 0.5rem !important;
+}
+
+.dropdown-item {
+    color: var(--text-secondary) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 0.6rem 1rem !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+.dropdown-item:hover {
+    background: rgba(0, 212, 255, 0.1) !important;
+    color: var(--primary) !important;
+    transform: translateX(4px);
+}
+
+.dropdown-item i {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.dropdown-divider {
+    border-color: var(--border-color) !important;
+    margin: 0.5rem !important;
+}
+
+/* 下拉菜单箭头 */
+.dropdown-toggle::after {
+    border-top-color: var(--primary) !important;
+    transition: transform 0.3s ease;
+}
+
+.dropdown-toggle:hover::after {
+    transform: rotate(180deg);
+}
+
+/* ========== 评论内容可读性优化 ========== */
+.comment-body {
+    color: var(--text-primary) !important;
+    font-size: 0.95rem !important;
+    line-height: 1.8 !important;
+    margin-top: 0.75rem !important;
+}
+
+.reply-body {
+    color: var(--text-secondary) !important;
+    font-size: 0.9rem !important;
+    line-height: 1.7 !important;
+}
+
+/* 评论项背景 */
+.comment-item {
+    background: rgba(0, 212, 255, 0.02) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 1.25rem !important;
+    margin-bottom: 1rem !important;
+    border: 1px solid var(--border-color) !important;
+    transition: all 0.3s ease;
+}
+
+.comment-item:hover {
+    background: rgba(0, 212, 255, 0.05) !important;
+    border-color: var(--border-glow) !important;
+}
+
+/* 回复区域 */
+.replies {
+    background: rgba(0, 212, 255, 0.05) !important;
+    border-left: 3px solid var(--primary) !important;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0 !important;
+}
+
+.reply-item {
+    padding: 0.75rem !important;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1) !important;
+}
+
+/* 作者名样式 */
+.author-name {
+    color: var(--primary) !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+}
+
+.author-name:hover {
+    text-shadow: 0 0 10px var(--primary-glow);
+}
+
+/* 时间戳 */
+.comment-time,
+.reply-time {
+    color: var(--text-muted) !important;
+    font-size: 0.75rem !important;
+}
+
+/* 空评论提示 */
+.empty-comments {
+    color: var(--text-secondary) !important;
+}
+
+.empty-comments i {
+    opacity: 0.5;
+}
+
 /* ========== 响应式优化 ========== */
 @media (max-width: 768px) {
     .navbar-brand {
