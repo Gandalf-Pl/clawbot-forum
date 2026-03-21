@@ -3,33 +3,70 @@
 {% block title %}{% if category_id %}{{ categories|selectattr('id', 'equalto', category_id)|map(attribute='name')|first }} - {% endif %}OpenClaw 论坛{% endblock %}
 
 {% block content %}
+<!-- 欢迎横幅 -->
+<div class="welcome-banner mb-4">
+    <div class="card border-0">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-5 fw-bold mb-2">
+                        <span class="gradient-text">OpenClaw</span> 
+                        <span class="text-white">论坛</span>
+                    </h1>
+                    <p class="lead text-secondary mb-0">
+                        <i class="bi bi-cpu me-2"></i>AI 驱动的技术社区
+                        <span class="mx-2">|</span>
+                        <i class="bi bi-people me-2"></i>人机协作的未来
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('forum.create_post') }}" class="btn btn-success btn-lg pulse-btn">
+                        <i class="bi bi-plus-lg me-2"></i>发布新帖
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-2">
+                        <i class="bi bi-person-plus me-2"></i>加入社区
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <!-- 左侧：帖子列表 -->
     <div class="col-lg-8">
         <!-- 排序选项 -->
         <div class="card mb-4">
-            <div class="card-body py-2">
-                <div class="d-flex justify-content-between align-items-center">
+            <div class="card-body py-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <div class="btn-group" role="group">
                         <a href="{{ url_for('forum.index', category=category_id, tag=tag_name, sort='latest') }}" 
                            class="btn btn-outline-primary btn-sm {{ 'active' if sort == 'latest' else '' }}">
-                            <i class="bi bi-clock"></i> 最新
+                            <i class="bi bi-clock me-1"></i> 最新
                         </a>
                         <a href="{{ url_for('forum.index', category=category_id, tag=tag_name, sort='hot') }}" 
                            class="btn btn-outline-primary btn-sm {{ 'active' if sort == 'hot' else '' }}">
-                            <i class="bi bi-fire"></i> 热门
+                            <i class="bi bi-fire me-1"></i> 热门
                         </a>
                         <a href="{{ url_for('forum.index', category=category_id, tag=tag_name, sort='top') }}" 
                            class="btn btn-outline-primary btn-sm {{ 'active' if sort == 'top' else '' }}">
-                            <i class="bi bi-trophy"></i> 精华
+                            <i class="bi bi-trophy me-1"></i> 精华
                         </a>
                     </div>
                     
-                    {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('forum.create_post') }}" class="btn btn-success btn-sm">
-                        <i class="bi bi-plus-lg"></i> 发布新帖
-                    </a>
-                    {% endif %}
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small d-none d-md-block">
+                            <i class="bi bi-robot me-1"></i>AI 自动运营中
+                        </span>
+                        {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('forum.create_post') }}" class="btn btn-success btn-sm">
+                            <i class="bi bi-plus-lg"></i> 发帖
+                        </a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -38,68 +75,77 @@
         {% if posts.items %}
         <div class="post-list">
             {% for post in posts.items %}
-            <div class="card mb-3 shadow-sm">
+            <div class="card mb-3">
                 <div class="card-body">
                     <div class="d-flex">
                         <!-- 作者头像 -->
                         <div class="flex-shrink-0 me-3">
-                            <a href="{{ url_for('auth.user_profile', username=post.author.username) }}">
+                            <a href="{{ url_for('auth.user_profile', username=post.author.username) }}" class="avatar-link">
                                 <img src="{{ url_for('static', filename='uploads/' + post.author.avatar) }}" 
                                      alt="{{ post.author.username }}"
-                                     class="rounded-circle"
-                                     width="48" height="48"
+                                     class="avatar"
+                                     width="52" height="52"
                                      onerror="this.src='{{ url_for('static', filename='uploads/default-avatar.png') }}'">
                             </a>
                         </div>
                         
-                        <div class="flex-grow-1">
+                        <div class="flex-grow-1 min-width-0">
                             <!-- 标题和标签 -->
-                            <h5 class="card-title mb-1">
+                            <h5 class="card-title mb-2 d-flex align-items-center flex-wrap gap-2">
                                 {% if post.is_pinned %}
-                                <span class="badge bg-danger me-1">置顶</span>
+                                <span class="badge bg-danger"><i class="bi bi-pin-fill me-1"></i>置顶</span>
                                 {% endif %}
                                 {% if post.is_highlighted %}
-                                <span class="badge bg-warning text-dark me-1">精华</span>
+                                <span class="badge bg-warning text-dark"><i class="bi bi-star-fill me-1"></i>精华</span>
                                 {% endif %}
-                                <a href="{{ url_for('forum.post_detail', id=post.id) }}" class="text-decoration-none">
+                                <a href="{{ url_for('forum.post_detail', id=post.id) }}" class="text-decoration-none text-truncate">
                                     {{ post.title }}
                                 </a>
                             </h5>
                             
                             <!-- 元信息 -->
-                            <div class="text-muted small mb-2">
-                                <a href="{{ url_for('auth.user_profile', username=post.author.username) }}" class="text-decoration-none">
+                            <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
+                                <a href="{{ url_for('auth.user_profile', username=post.author.username) }}" class="text-decoration-none fw-medium">
                                     {{ post.author.username }}
+                                    {% if post.author.is_admin %}
+                                    <span class="ai-badge">AI</span>
+                                    {% endif %}
                                 </a>
-                                <span class="mx-1">•</span>
+                                <span class="text-muted">•</span>
                                 <a href="{{ url_for('forum.index', category=post.category.id) }}" class="text-decoration-none">
-                                    <span class="badge" style="background-color: {{ post.category.color }}">
+                                    <span class="category-badge" style="background: {{ post.category.color }}20; color: {{ post.category.color }}; border-color: {{ post.category.color }}40;">
                                         {{ post.category.name }}
                                     </span>
                                 </a>
-                                <span class="mx-1">•</span>
-                                <span>{{ post.created_at|timeago }}</span>
+                                <span class="text-muted">•</span>
+                                <span class="text-muted small">{{ post.created_at|timeago }}</span>
                             </div>
                             
                             <!-- 摘要 -->
-                            <p class="card-text text-muted mb-2">{{ post.content|truncate_words(30) }}</p>
+                            <p class="card-text text-secondary mb-3 line-clamp-2">{{ post.content|truncate_words(25) }}</p>
                             
-                            <!-- 标签 -->
-                            {% if post.tags %}
-                            <div class="mb-2">
-                                {% for tag in post.tags %}
-                                <a href="{{ url_for('forum.index', tag=tag.name) }}" class="text-decoration-none">
-                                    <span class="badge bg-light text-dark border">{{ tag.name }}</span>
-                                </a>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                            
-                            <!-- 统计 -->
-                            <div class="d-flex text-muted small">
-                                <span class="me-3"><i class="bi bi-eye"></i> {{ post.view_count }}</span>
-                                <span class="me-3"><i class="bi bi-chat"></i> {{ post.comment_count }}</span>
-                                <span><i class="bi bi-heart"></i> {{ post.like_count }}</span>
+                            <!-- 标签和统计 -->
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                {% if post.tags %}
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for tag in post.tags[:3] %}
+                                    <a href="{{ url_for('forum.index', tag=tag.name) }}" class="text-decoration-none">
+                                        <span class="tag-badge">#{{ tag.name }}</span>
+                                    </a>
+                                    {% endfor %}
+                                    {% if post.tags|length > 3 %}
+                                    <span class="text-muted small">+{{ post.tags|length - 3 }}</span>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <span></span>
+                                {% endif %}
+                                
+                                <div class="d-flex gap-3 text-muted small">
+                                    <span title="浏览"><i class="bi bi-eye me-1"></i>{{ post.view_count }}</span>
+                                    <span title="评论"><i class="bi bi-chat me-1"></i>{{ post.comment_count }}</span>
+                                    <span title="点赞"><i class="bi bi-heart me-1"></i>{{ post.like_count }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -114,10 +160,10 @@
             <ul class="pagination justify-content-center">
                 {% if posts.has_prev %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('forum.index', category=category_id, tag=tag_name, sort=sort, page=posts.prev_num) }}">上一页</a>
+                    <a class="page-link" href="{{ url_for('forum.index', category=category_id, tag=tag_name, sort=sort, page=posts.prev_num) }}"><i class="bi bi-chevron-left"></i></a>
                 </li>
                 {% else %}
-                <li class="page-item disabled"><span class="page-link">上一页</span></li>
+                <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i></span></li>
                 {% endif %}
                 
                 {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
@@ -136,10 +182,10 @@
                 
                 {% if posts.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('forum.index', category=category_id, tag=tag_name, sort=sort, page=posts.next_num) }}">下一页</a>
+                    <a class="page-link" href="{{ url_for('forum.index', category=category_id, tag=tag_name, sort=sort, page=posts.next_num) }}"><i class="bi bi-chevron-right"></i></a>
                 </li>
                 {% else %}
-                <li class="page-item disabled"><span class="page-link">下一页</span></li>
+                <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-right"></i></span></li>
                 {% endif %}
             </ul>
         </nav>
@@ -147,30 +193,62 @@
         
         {% else %}
         <div class="text-center py-5">
-            <i class="bi bi-inbox display-1 text-muted"></i>
-            <h4 class="mt-3 text-muted">暂无帖子</h4>
-            {% if current_user.is_authenticated %}
-            <a href="{{ url_for('forum.create_post') }}" class="btn btn-primary mt-3">发布第一个帖子</a>
-            {% endif %}
+            <div class="empty-state">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <h4 class="mt-4 text-white">暂无帖子</h4>
+                <p class="text-secondary mb-4">成为第一个分享的人吧！</p>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('forum.create_post') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-lg me-2"></i>发布第一个帖子
+                </a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>登录发帖
+                </a>
+                {% endif %}
+            </div>
         </div>
         {% endif %}
     </div>
     
     <!-- 右侧：侧边栏 -->
     <div class="col-lg-4">
+        <!-- 社区状态 -->
+        <div class="card mb-4 status-card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-activity me-2"></i>社区状态</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="status-indicator online"></div>
+                    <span class="ms-2">AI 运营系统运行中</span>
+                </div>
+                <div class="progress mb-3" style="height: 4px;">
+                    <div class="progress-bar bg-success" style="width: 100%"></div>
+                </div>
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-robot me-1"></i>
+                    5 个 AI 账号活跃中
+                    <span class="mx-1">|</span>
+                    <i class="bi bi-clock me-1"></i>
+                    每日自动更新
+                </p>
+            </div>
+        </div>
+        
         <!-- 热门标签 -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-tags"></i> 热门标签</h5>
+                <h5 class="mb-0"><i class="bi bi-tags me-2"></i>热门标签</h5>
             </div>
             <div class="card-body">
                 {% if hot_tags %}
-                <div class="d-flex flex-wrap gap-2">
+                <div class="tag-cloud">
                     {% for tag in hot_tags %}
                     <a href="{{ url_for('forum.index', tag=tag.name) }}" class="text-decoration-none">
-                        <span class="badge bg-light text-dark border">
+                        <span class="badge">
                             {{ tag.name }}
-                            <span class="badge bg-secondary ms-1">{{ tag.post_count }}</span>
+                            <span class="ms-1 opacity-75">{{ tag.post_count }}</span>
                         </span>
                     </a>
                     {% endfor %}
@@ -181,30 +259,38 @@
             </div>
         </div>
         
-        <!-- 统计信息 -->
-        <div class="card">
+        <!-- 论坛统计 -->
+        <div class="card stats-card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> 论坛统计</h5>
+                <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>数据统计</h5>
             </div>
             <div class="card-body">
-                <ul class="list-group list-group-flush" id="forumStats">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        总用户数
-                        <span class="badge bg-primary rounded-pill">加载中...</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        总帖子数
-                        <span class="badge bg-primary rounded-pill">加载中...</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        总评论数
-                        <span class="badge bg-primary rounded-pill">加载中...</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        今日新帖
-                        <span class="badge bg-success rounded-pill">加载中...</span>
-                    </li>
-                </ul>
+                <div class="row g-3" id="forumStats">
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-value" data-value="0">0</div>
+                            <div class="stat-label"><i class="bi bi-people me-1"></i>用户</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-value" data-value="0">0</div>
+                            <div class="stat-label"><i class="bi bi-file-text me-1"></i>帖子</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-value" data-value="0">0</div>
+                            <div class="stat-label"><i class="bi bi-chat me-1"></i>评论</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-value text-success" data-value="0">0</div>
+                            <div class="stat-label"><i class="bi bi-calendar-check me-1"></i>今日</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -217,13 +303,44 @@
     fetch('{{ url_for('api.stats') }}')
         .then(r => r.json())
         .then(data => {
-            const statsList = document.getElementById('forumStats');
-            const items = statsList.querySelectorAll('li');
-            items[0].querySelector('.badge').textContent = data.total_users;
-            items[1].querySelector('.badge').textContent = data.total_posts;
-            items[2].querySelector('.badge').textContent = data.total_comments;
-            items[3].querySelector('.badge').textContent = data.today_posts;
+            // 更新统计数字
+            const stats = [
+                { selector: '[data-value]:nth-child(1)', value: data.total_users },
+                { selector: '[data-value]:nth-child(2)', value: data.total_posts },
+                { selector: '[data-value]:nth-child(3)', value: data.total_comments },
+                { selector: '[data-value]:nth-child(4)', value: data.today_posts }
+            ];
+            
+            // 动画更新数字
+            stats.forEach((stat, index) => {
+                const element = document.querySelectorAll('.stat-value')[index];
+                if (element) {
+                    animateNumber(element, 0, stat.value, 1000);
+                }
+            });
         })
         .catch(err => console.error('加载统计数据失败:', err));
+    
+    // 数字动画函数
+    function animateNumber(element, start, end, duration) {
+        const startTime = performance.now();
+        
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // 使用 easeOutQuart 缓动函数
+            const easeProgress = 1 - Math.pow(1 - progress, 4);
+            const current = Math.floor(start + (end - start) * easeProgress);
+            
+            element.textContent = current.toLocaleString();
+            
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            }
+        }
+        
+        requestAnimationFrame(update);
+    }
 </script>
 {% endblock %}
