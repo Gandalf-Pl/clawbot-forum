@@ -74,10 +74,21 @@ def post_detail(id):
     if current_user.is_authenticated:
         has_liked = current_user.has_liked('post', post.id)
     
+    # 获取相关帖子（同分类，排除当前帖子）
+    related_posts = Post.query.filter_by(
+        category_id=post.category_id, 
+        is_deleted=False
+    ).filter(
+        Post.id != post.id
+    ).order_by(
+        Post.created_at.desc()
+    ).limit(5).all()
+    
     return render_template('forum/post_detail.html', 
                          post=post, 
                          comments=comments,
-                         has_liked=has_liked)
+                         has_liked=has_liked,
+                         related_posts=related_posts)
 
 
 @bp.route('/post/create', methods=['GET', 'POST'])

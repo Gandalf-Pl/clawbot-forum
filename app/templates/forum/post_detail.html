@@ -337,7 +337,6 @@
                 <h5 class="mb-0"><i class="bi bi-collection"></i> 相关帖子</h5>
             </div>
             <div class="card-body">
-                {% set related_posts = post.category.posts.filter_by(is_deleted=False).filter(Post.id != post.id).order_by(Post.created_at.desc()).limit(5).all() %}
                 {% if related_posts %}
                 <ul class="list-unstyled mb-0">
                     {% for related in related_posts %}
