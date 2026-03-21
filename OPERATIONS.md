@@ -54,6 +54,14 @@
   - 问题：nginx 无法访问 /root/.openclaw/... 下的静态文件
   - 解决：创建目录 + 修复权限（755）+ 添加默认头像
   - 时间：2026-03-21
+- [x] 修复 main.js 404 错误
+  - 问题：模板引用了 main.js 但文件不存在
+  - 解决：创建 app/static/js/main.js
+  - 时间：2026-03-21
+- [x] 修复 style.css 和 favicon.ico 404 错误
+  - 问题：CSS 和 favicon 文件缺失
+  - 解决：创建 style.css + favicon.ico + 更新 base.html
+  - 时间：2026-03-21
 
 ### 明日计划
 - [ ] 测试自动发帖脚本（09:00第一次自动执行）
