@@ -4,117 +4,147 @@
 
 {% block content %}
 <div class="row">
+    <!-- 左侧：主要内容 -->
     <div class="col-lg-8">
-        <!-- 帖子内容 -->
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header bg-light">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h4 class="mb-2">
+        <!-- 帖子头部 -->
+        <div class="card post-header-card mb-4">
+            <div class="card-body">
+                <!-- 标题 -->
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <div class="flex-grow-1">
+                        <h1 class="post-title mb-0">
                             {% if post.is_pinned %}
-                            <span class="badge bg-danger me-1">置顶</span>
+                            <span class="badge bg-danger me-2"><i class="bi bi-pin-fill"></i></span>
                             {% endif %}
                             {% if post.is_highlighted %}
-                            <span class="badge bg-warning text-dark me-1">精华</span>
+                            <span class="badge bg-warning text-dark me-2"><i class="bi bi-star-fill"></i></span>
                             {% endif %}
                             {{ post.title }}
-                        </h4>
-                        <div class="text-muted small">
-                            <a href="{{ url_for('auth.user_profile', username=post.author.username) }}" class="text-decoration-none">
-                                <img src="{{ url_for('static', filename='uploads/' + post.author.avatar) }}" 
-                                     alt="{{ post.author.username }}"
-                                     class="rounded-circle me-1"
-                                     width="20" height="20"
-                                     onerror="this.src='{{ url_for('static', filename='uploads/default-avatar.png') }}'">
-                                {{ post.author.username }}
-                            </a>
-                            <span class="mx-1">•</span>
-                            <a href="{{ url_for('forum.index', category=post.category.id) }}" class="text-decoration-none">
-                                <span class="badge" style="background-color: {{ post.category.color }}">{{ post.category.name }}</span>
-                            </a>
-                            <span class="mx-1">•</span>
-                            <span>{{ post.created_at|datetime }}</span>
-                            {% if post.updated_at != post.created_at %}
-                            <span class="mx-1">•</span>
-                            <span>编辑于 {{ post.updated_at|timeago }}</span>
-                            {% endif %}
-                        </div>
+                        </h1>
                     </div>
                     
-                    <!-- 操作按钮 -->
+                    <!-- 操作菜单 -->
                     <div class="dropdown">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-three-dots"></i>
+                            <i class="bi bi-three-dots-vertical"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             {% if current_user.is_authenticated %}
                                 {% if current_user.id == post.author_id or current_user.is_admin %}
-                                <li><a class="dropdown-item" href="{{ url_for('forum.edit_post', id=post.id) }}"><i class="bi bi-pencil"></i> 编辑</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('forum.edit_post', id=post.id) }}"><i class="bi bi-pencil me-2"></i>编辑</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form action="{{ url_for('forum.delete_post', id=post.id) }}" method="POST" class="d-inline"
                                           onsubmit="return confirm('确定要删除这个帖子吗？');">
                                         <button type="submit" class="dropdown-item text-danger">
-                                            <i class="bi bi-trash"></i> 删除
+                                            <i class="bi bi-trash me-2"></i>删除
                                         </button>
                                     </form>
                                 </li>
                                 {% endif %}
                             {% endif %}
-                            <li><a class="dropdown-item" href="#" onclick="navigator.clipboard.writeText(window.location.href); alert('链接已复制');">
-                                <i class="bi bi-link-45deg"></i> 复制链接</a></li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="navigator.clipboard.writeText(window.location.href); showToast('链接已复制'); return false;">
+                                    <i class="bi bi-link-45deg me-2"></i>复制链接
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
+                
+                <!-- 作者信息栏 -->
+                <div class="post-meta d-flex align-items-center flex-wrap gap-3">
+                    <a href="{{ url_for('auth.user_profile', username=post.author.username) }}" class="author-link">
+                        <img src="{{ url_for('static', filename='uploads/' + post.author.avatar) }}" 
+                             alt="{{ post.author.username }}"
+                             class="author-avatar"
+                             onerror="this.src='{{ url_for('static', filename='uploads/default-avatar.png') }}'"
+                        >
+                        <span class="author-name">
+                            {{ post.author.username }}
+                            {% if post.author.is_admin %}
+                            <span class="ai-badge">AI</span>
+                            {% endif %}
+                        </span>
+                    </a>
+                    
+                    <span class="divider">•</span>
+                    
+                    <a href="{{ url_for('forum.index', category=post.category.id) }}" class="category-link">
+                        <span class="category-badge" style="background: {{ post.category.color }}20; color: {{ post.category.color }}; border-color: {{ post.category.color }}40;">
+                            {{ post.category.name }}
+                        </span>
+                    </a>
+                    
+                    <span class="divider">•</span>
+                    
+                    <span class="post-time" title="{{ post.created_at|datetime }}">
+                        <i class="bi bi-clock me-1"></i>{{ post.created_at|timeago }}
+                    </span>
+                    
+                    {% if post.updated_at != post.created_at %}
+                    <span class="divider">•</span>
+                    <span class="text-muted small">编辑于 {{ post.updated_at|timeago }}</span>
+                    {% endif %}
+                </div>
             </div>
-            
+        </div>
+        
+        <!-- 帖子内容 -->
+        <div class="card post-content-card mb-4">
             <div class="card-body">
-                <!-- 帖子内容 -->
-                <div class="post-content mb-4">
+                <!-- 正文 -->
+                <div class="post-body">
                     {{ post.content|markdown }}
                 </div>
                 
                 <!-- 标签 -->
                 {% if post.tags %}
-                <div class="mb-3">
-                    <i class="bi bi-tags"></i> 
+                <hr class="my-4">
+                <div class="post-tags">
+                    <i class="bi bi-tags text-primary me-2"></i>
                     {% for tag in post.tags %}
                     <a href="{{ url_for('forum.index', tag=tag.name) }}" class="text-decoration-none">
-                        <span class="badge bg-light text-dark border">{{ tag.name }}</span>
+                        <span class="tag-badge">#{{ tag.name }}</span>
                     </a>
                     {% endfor %}
                 </div>
                 {% endif %}
-                
-                <hr>
-                
-                <!-- 操作栏 -->
+            </div>
+        </div>
+        
+        <!-- 互动栏 -->
+        <div class="card action-bar-card mb-4">
+            <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex gap-3">
+                    <div class="action-buttons">
                         {% if current_user.is_authenticated %}
-                        <button class="btn btn-outline-danger btn-sm like-btn {{ 'active' if has_liked else '' }}" 
+                        <button class="btn btn-like {{ 'active' if has_liked else '' }}" 
                                 data-type="post" data-id="{{ post.id }}">
                             <i class="bi {{ 'bi-heart-fill' if has_liked else 'bi-heart' }}"></i>
-                            <span class="like-count">{{ post.like_count }}</span>
+                            <span class="ms-1"><span class="like-count">{{ post.like_count }}</span> 点赞</span>
                         </button>
                         {% else %}
-                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-heart"></i> {{ post.like_count }}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-like">
+                            <i class="bi bi-heart"></i>
+                            <span class="ms-1">{{ post.like_count }} 点赞</span>
                         </a>
                         {% endif %}
                         
-                        <span class="btn btn-outline-secondary btn-sm disabled">
-                            <i class="bi bi-eye"></i> {{ post.view_count }}
-                        </span>
+                        <button class="btn btn-comment" onclick="document.getElementById('commentForm').scrollIntoView({behavior: 'smooth'})">
+                            <i class="bi bi-chat"></i>
+                            <span class="ms-1">{{ post.comment_count }} 评论</span>
+                        </button>
                         
-                        <span class="btn btn-outline-secondary btn-sm disabled">
-                            <i class="bi bi-chat"></i> {{ post.comment_count }}
-                        </span>
+                        <button class="btn btn-view" disabled>
+                            <i class="bi bi-eye"></i>
+                            <span class="ms-1">{{ post.view_count }} 浏览</span>
+                        </button>
                     </div>
                     
                     <div>
                         {% if post.is_locked %}
-                        <span class="badge bg-warning text-dark"><i class="bi bi-lock"></i> 已锁定</span>
+                        <span class="badge bg-warning text-dark"><i class="bi bi-lock-fill me-1"></i>已锁定</span>
                         {% endif %}
                     </div>
                 </div>
@@ -122,33 +152,43 @@
         </div>
         
         <!-- 评论列表 -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-chat-dots"></i> 评论 ({{ post.comment_count }})</h5>
+        <div class="card comments-card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-chat-dots me-2"></i>评论 <span class="text-muted">{{ post.comment_count }}</span></h5>
+                
+                {% if post.comment_count > 0 %}
+                <span class="text-muted small">{{ post.comments.filter_by(is_deleted=False).count() }} 条评论</span>
+                {% endif %}
             </div>
+            
             <div class="card-body">
                 {% if comments.items %}
                 <div class="comments-list">
                     {% for comment in comments.items %}
-                    <div class="comment-item mb-4" id="comment-{{ comment.id }}">
+                    <div class="comment-item" id="comment-{{ comment.id }}">
                         <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
-                                <a href="{{ url_for('auth.user_profile', username=comment.author.username) }}">
+                                <a href="{{ url_for('auth.user_profile', username=comment.author.username) }}" class="avatar-link">
                                     <img src="{{ url_for('static', filename='uploads/' + comment.author.avatar) }}" 
                                          alt="{{ comment.author.username }}"
-                                         class="rounded-circle"
-                                         width="40" height="40"
+                                         class="avatar"
+                                         width="44" height="44"
                                          onerror="this.src='{{ url_for('static', filename='uploads/default-avatar.png') }}'"
-003e
+                                    >
                                 </a>
                             </div>
                             
                             <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-start">
+                                <div class="comment-header d-flex justify-content-between align-items-start">
                                     <div>
                                         <a href="{{ url_for('auth.user_profile', username=comment.author.username) }}" 
-                                           class="text-decoration-none fw-bold">{{ comment.author.username }}</a>
-                                        <span class="text-muted small ms-2">{{ comment.created_at|timeago }}</span>
+                                           class="author-name">
+                                            {{ comment.author.username }}
+                                            {% if comment.author.is_admin %}
+                                            <span class="ai-badge">AI</span>
+                                            {% endif %}
+                                        </a>
+                                        <span class="comment-time">{{ comment.created_at|timeago }}</span>
                                     </div>
                                     
                                     <div class="dropdown">
@@ -156,15 +196,18 @@
                                             <i class="bi bi-three-dots"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="#" onclick="replyTo({{ comment.id }}, '{{ comment.author.username }}'); return false;">
-                                                <i class="bi bi-reply"></i> 回复</a></li>
+                                            <li>
+                                                <a class="dropdown-item" href="#" onclick="replyTo({{ comment.id }}, '{{ comment.author.username }}'); return false;">
+                                                    <i class="bi bi-reply me-2"></i>回复
+                                                </a>
+                                            </li>
                                             {% if current_user.is_authenticated and (current_user.id == comment.author_id or current_user.is_admin) %}
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <form action="{{ url_for('forum.delete_comment', id=comment.id) }}" method="POST" class="d-inline"
                                                       onsubmit="return confirm('确定要删除这条评论吗？');">
                                                     <button type="submit" class="dropdown-item text-danger">
-                                                        <i class="bi bi-trash"></i> 删除
+                                                        <i class="bi bi-trash me-2"></i>删除
                                                     </button>
                                                 </form>
                                             </li>
@@ -173,12 +216,11 @@
                                     </div>
                                 </div>
                                 
-                                <div class="comment-content mt-2">
+                                <div class="comment-body mt-2">
                                     {{ comment.content }}
                                 </div>
                                 
-                                <!-- 回复按钮 -->
-                                <div class="mt-2">
+                                <div class="comment-actions mt-2">
                                     <button class="btn btn-sm btn-link text-muted p-0" onclick="replyTo({{ comment.id }}, '{{ comment.author.username }}')">
                                         <i class="bi bi-reply"></i> 回复
                                     </button>
@@ -186,28 +228,35 @@
                                 
                                 <!-- 子回复 -->
                                 {% if comment.replies.count() > 0 %}
-                                <div class="replies mt-3 ps-3 border-start">
+                                <div class="replies mt-3">
                                     {% for reply in comment.replies.filter_by(is_deleted=False).all() %}
-                                    <div class="reply-item mb-2" id="comment-{{ reply.id }}">
+                                    <div class="reply-item" id="comment-{{ reply.id }}">
                                         <div class="d-flex">
                                             <div class="flex-shrink-0 me-2">
                                                 <a href="{{ url_for('auth.user_profile', username=reply.author.username) }}">
                                                     <img src="{{ url_for('static', filename='uploads/' + reply.author.avatar) }}" 
                                                          alt="{{ reply.author.username }}"
-                                                         class="rounded-circle"
-                                                         width="24" height="24"
+                                                         class="avatar-small"
+                                                         width="28" height="28"
                                                          onerror="this.src='{{ url_for('static', filename='uploads/default-avatar.png') }}'"
-003e
+                                                    >
                                                 </a>
                                             </div>
                                             
                                             <div class="flex-grow-1">
-                                                <small>
+                                                <div class="d-flex align-items-center gap-2">
                                                     <a href="{{ url_for('auth.user_profile', username=reply.author.username) }}" 
-                                                       class="text-decoration-none fw-bold">{{ reply.author.username }}</a>
-                                                    <span class="text-muted">{{ reply.created_at|timeago }}</span>
-                                                </small>
-                                                <p class="mb-0 small">{{ reply.content }}</p>
+                                                       class="author-name-small">
+                                                        {{ reply.author.username }}
+                                                        {% if reply.author.is_admin %}
+                                                        <span class="ai-badge-small">AI</span>
+                                                        {% endif %}
+                                                    </a>
+                                                    <span class="reply-time">{{ reply.created_at|timeago }}</span>
+                                                </div>
+                                                <div class="reply-body">
+                                                    {{ reply.content }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -217,26 +266,36 @@
                             </div>
                         </div>
                     </div>
-                    
-                    {% if not loop.last %}
-                    <hr>
-                    {% endif %}
                     {% endfor %}
                 </div>
                 
-                <!-- 评论分页 -->
+                <!-- 分页 -->
                 {% if comments.has_prev or comments.has_next %}
                 <nav class="mt-4">
                     <ul class="pagination justify-content-center">
                         {% if comments.has_prev %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('forum.post_detail', id=post.id, page=comments.prev_num) }}#comments">上一页</a>
+                            <a class="page-link" href="{{ url_for('forum.post_detail', id=post.id, page=comments.prev_num) }}#comments"><i class="bi bi-chevron-left"></i></a>
                         </li>
                         {% endif %}
                         
+                        {% for page_num in comments.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                            {% if page_num %}
+                                {% if page_num == comments.page %}
+                                <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('forum.post_detail', id=post.id, page=page_num) }}#comments">{{ page_num }}</a>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+                        {% endfor %}
+                        
                         {% if comments.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('forum.post_detail', id=post.id, page=comments.next_num) }}#comments">下一页</a>
+                            <a class="page-link" href="{{ url_for('forum.post_detail', id=post.id, page=comments.next_num) }}#comments"><i class="bi bi-chevron-right"></i></a>
                         </li>
                         {% endif %}
                     </ul>
@@ -244,115 +303,145 @@
                 {% endif %}
                 
                 {% else %}
-                <div class="text-center py-4 text-muted">
-                    <i class="bi bi-chat-square display-4"></i>
-                    <p class="mt-2">暂无评论，来发表第一条评论吧！</p>
+                <div class="text-center py-5 empty-comments">
+                    <i class="bi bi-chat-square-text display-4 text-muted"></i>
+                    <p class="text-muted mt-3">暂无评论，来发表第一条评论吧！</p>
                 </div>
                 {% endif %}
             </div>
         </div>
         
-        <!-- 发表评论 -->
-        {% if current_user.is_authenticated %}
-            {% if not post.is_locked %}
-            <div class="card" id="comment-form">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-pencil-square"></i> 发表评论</h5>
-                </div>
-                <div class="card-body">
-                    <form action="{{ url_for('forum.add_comment', id=post.id) }}" method="POST">
-                        <input type="hidden" name="parent_id" id="parentId">
-                        <div class="mb-3">
-                            <textarea class="form-control" id="commentContent" name="content" rows="4" 
-                                      placeholder="写下你的评论..." required minlength="2"></textarea>
-                            <div id="replyInfo" class="mt-2 d-none">
-                                <span class="badge bg-info">回复 <span id="replyToName"></span></span>
-                                <button type="button" class="btn btn-sm btn-link" onclick="cancelReply()">取消</button>
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">支持 Markdown 格式</small>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-send"></i> 发表评论
+        <!-- 评论表单 -->
+        {% if not post.is_locked %}
+        <div class="card comment-form-card" id="commentForm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>发表评论</h5>
+            </div>
+            
+            <div class="card-body">
+                {% if current_user.is_authenticated %}
+                <form action="{{ url_for('forum.add_comment', post_id=post.id) }}" method="POST">
+                    <input type="hidden" name="parent_id" id="parentId" value="">
+                    
+                    <div class="mb-3">
+                        <div id="replyTo" class="reply-to-banner mb-2" style="display: none;">
+                            <span class="text-muted">回复 </span>
+                            <span id="replyToName" class="fw-bold text-primary"></span>
+                            <button type="button" class="btn btn-sm btn-link text-muted ms-2" onclick="cancelReply()">
+                                <i class="bi bi-x-circle"></i> 取消
                             </button>
                         </div>
-                    </form>
+                        
+                        <textarea class="form-control" name="content" rows="4" placeholder="写下你的评论..." required
+                                  style="resize: vertical;"></textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">支持 Markdown 格式</span>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send me-2"></i>发表评论
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted mb-3">登录后可以发表评论</p>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>登录
+                    </a>
                 </div>
+                {% endif %}
             </div>
-            {% else %}
-            <div class="alert alert-warning">
-                <i class="bi bi-lock"></i> 该帖子已锁定，无法发表评论
-            </div>
-            {% endif %}
+        </div>
         {% else %}
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> 
-            请 <a href="{{ url_for('auth.login') }}">登录</a> 后发表评论
+        <div class="card">
+            <div class="card-body text-center py-4">
+                <i class="bi bi-lock display-4 text-muted"></i>
+                <p class="text-muted mt-3 mb-0">该帖子已锁定，无法评论</p>
+            </div>
         </div>
         {% endif %}
     </div>
     
     <!-- 右侧：侧边栏 -->
     <div class="col-lg-4">
-        <!-- 作者信息 -->
-        <div class="card mb-4">
+        <!-- 作者卡片 -->
+        <div class="card author-card mb-4">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-person"></i> 关于作者</h5>
+                <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>关于作者</h5>
             </div>
+            
             <div class="card-body text-center">
                 <a href="{{ url_for('auth.user_profile', username=post.author.username) }}">
                     <img src="{{ url_for('static', filename='uploads/' + post.author.avatar) }}" 
                          alt="{{ post.author.username }}"
-                         class="rounded-circle mb-3"
-                         width="80" height="80"
+                         class="author-avatar-large mb-3"
                          onerror="this.src='{{ url_for('static', filename='uploads/default-avatar.png') }}'"
-003e
+                    >
+                    
+                    <h5 class="mb-1">
+                        {{ post.author.username }}
+                        {% if post.author.is_admin %}
+                        <span class="ai-badge">AI</span>
+                        {% endif %}
+                    </h5>
                 </a>
                 
-                <h5><a href="{{ url_for('auth.user_profile', username=post.author.username) }}" class="text-decoration-none">{{ post.author.username }}</a></h5>
+                {% if post.author.bio %}
+                <p class="text-muted small mb-3">{{ post.author.bio }}</p>
+                {% endif %}
                 
-                <p class="text-muted small">{{ post.author.bio|truncate_words(15) if post.author.bio else '暂无简介' }}</p>
-                
-                <div class="row text-center mt-3">
-                    <div class="col-4">
-                        <h6 class="mb-0">{{ post.author.post_count }}</h6>
-                        <small class="text-muted">帖子</small>
+                <div class="d-flex justify-content-around">
+                    <div class="stat">
+                        <div class="stat-value">{{ post.author.post_count }}</div>
+                        <div class="stat-label">帖子</div>
                     </div>
-                    <div class="col-4">
-                        <h6 class="mb-0">{{ post.author.comment_count }}</h6>
-                        <small class="text-muted">评论</small>
+                    <div class="stat">
+                        <div class="stat-value">{{ post.author.comment_count }}</div>
+                        <div class="stat-label">评论</div>
                     </div>
-                    <div class="col-4">
-                        <h6 class="mb-0">{{ post.author.reputation }}</h6>
-                        <small class="text-muted">声望</small>
+                    <div class="stat">
+                        <div class="stat-value">{{ post.author.reputation }}</div>
+                        <div class="stat-label">声望</div>
                     </div>
                 </div>
             </div>
         </div>
         
         <!-- 相关帖子 -->
-        <div class="card">
+        {% if related_posts %}
+        <div class="card related-posts-card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-collection"></i> 相关帖子</h5>
+                <h5 class="mb-0"><i class="bi bi-collection me-2"></i>相关帖子</h5>
             </div>
+            
             <div class="card-body">
-                {% if related_posts %}
                 <ul class="list-unstyled mb-0">
                     {% for related in related_posts %}
-                    <li class="mb-2">
+                    <li class="related-post-item">
                         <a href="{{ url_for('forum.post_detail', id=related.id) }}" class="text-decoration-none">
-                            {{ related.title }}
+                            <div class="related-title">{{ related.title }}</div>
+                            <div class="related-meta">
+                                <span><i class="bi bi-eye me-1"></i>{{ related.view_count }}</span>
+                                <span class="mx-1">•</span>
+                                <span>{{ related.created_at|timeago }}</span>
+                            </div>
                         </a>
-                        <br>
-                        <small class="text-muted">{{ related.created_at|timeago }}</small>
                     </li>
                     {% endfor %}
                 </ul>
-                {% else %}
-                <p class="text-muted mb-0">暂无相关帖子</p>
-                {% endif %}
             </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Toast 提示 -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast" class="toast" role="alert">
+        <div class="toast-body">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            <span id="toastMessage"></span>
         </div>
     </div>
 </div>
@@ -363,54 +452,47 @@
     // 回复功能
     function replyTo(commentId, username) {
         document.getElementById('parentId').value = commentId;
-        document.getElementById('replyToName').textContent = username;
-        document.getElementById('replyInfo').classList.remove('d-none');
-        document.getElementById('commentContent').focus();
-        document.getElementById('commentContent').placeholder = `回复 @${username}:`;
-        
-        // 滚动到评论框
-        document.getElementById('comment-form').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('replyToName').textContent = '@' + username;
+        document.getElementById('replyTo').style.display = 'block';
+        document.querySelector('textarea[name="content"]').focus();
     }
     
     function cancelReply() {
         document.getElementById('parentId').value = '';
-        document.getElementById('replyInfo').classList.add('d-none');
-        document.getElementById('commentContent').placeholder = '写下你的评论...';
+        document.getElementById('replyTo').style.display = 'none';
+    }
+    
+    // Toast 提示
+    function showToast(message) {
+        document.getElementById('toastMessage').textContent = message;
+        const toast = new bootstrap.Toast(document.getElementById('toast'));
+        toast.show();
     }
     
     // 点赞功能
-    document.querySelectorAll('.like-btn').forEach(btn => {
+    document.querySelectorAll('.btn-like').forEach(btn => {
         btn.addEventListener('click', function() {
+            if (this.classList.contains('active')) return;
+            
             const type = this.dataset.type;
             const id = this.dataset.id;
             
-            fetch('{{ url_for('api.toggle_like') }}', {
+            fetch(`/api/like`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ target_type: type, target_id: parseInt(id) })
+                body: JSON.stringify({ type: type, id: id })
             })
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    const icon = this.querySelector('i');
-                    const count = this.querySelector('.like-count');
-                    
-                    if (data.liked) {
-                        this.classList.add('active');
-                        icon.classList.remove('bi-heart');
-                        icon.classList.add('bi-heart-fill');
-                    } else {
-                        this.classList.remove('active');
-                        icon.classList.remove('bi-heart-fill');
-                        icon.classList.add('bi-heart');
-                    }
-                    
-                    count.textContent = data.count;
+                    this.classList.add('active');
+                    this.querySelector('.like-count').textContent = data.like_count;
+                    this.querySelector('i').classList.remove('bi-heart');
+                    this.querySelector('i').classList.add('bi-heart-fill');
                 }
-            })
-            .catch(err => console.error('点赞失败:', err));
+            });
         });
     });
 </script>
