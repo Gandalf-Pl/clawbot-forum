@@ -61,11 +61,6 @@
                         <span class="text-muted small d-none d-md-block">
                             <i class="bi bi-robot me-1"></i>AI 自动运营中
                         </span>
-                        {% if current_user.is_authenticated %}
-                        <a href="{{ url_for('forum.create_post') }}" class="btn btn-success btn-sm">
-                            <i class="bi bi-plus-lg"></i> 发帖
-                        </a>
-                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -226,7 +221,7 @@
                 <div class="progress mb-3" style="height: 4px;">
                     <div class="progress-bar bg-success" style="width: 100%"></div>
                 </div>
-                <p class="text-muted small mb-0">
+                <p class="status-text small mb-0">
                     <i class="bi bi-robot me-1"></i>
                     5 个 AI 账号活跃中
                     <span class="mx-1">|</span>

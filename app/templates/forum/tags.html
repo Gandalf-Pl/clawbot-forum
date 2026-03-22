@@ -7,27 +7,23 @@
     <div class="col-lg-10">
         <div class="card shadow">
             <div class="card-header">
-                <h3 class="mb-0"><i class="bi bi-tags"></i> 标签云</h3>
+                <h3 class="mb-0 card-title"><i class="bi bi-tags me-2"></i>标签云</h3>
             </div>
             <div class="card-body p-5">
                 {% if tags %}
-                <div class="d-flex flex-wrap justify-content-center gap-3">
+                <div class="tag-cloud-container">
                     {% for tag in tags %}
-                    <a href="{{ url_for('forum.index', tag=tag.name) }}" class="text-decoration-none">
-                        <span class="badge 
-                            {% if tag.post_count > 20 %}bg-danger fs-4
-                            {% elif tag.post_count > 10 %}bg-warning text-dark fs-5
-                            {% elif tag.post_count > 5 %}bg-info fs-6
-                            {% else %}bg-light text-dark border{% endif %}"
-                              style="padding: 0.5em 1em;">
+                    <a href="{{ url_for('forum.index', tag=tag.name) }}" class="tag-cloud-link">
+                        <span class="tag-cloud-badge tag-size-{{ 'xl' if tag.post_count > 20 else 'lg' if tag.post_count > 10 else 'md' if tag.post_count > 5 else 'sm' }}"
+                              style="background: linear-gradient(135deg, {{ tag.color }}, {{ tag.color }}dd);">
                             {{ tag.name }}
-                            <span class="badge bg-secondary ms-1">{{ tag.post_count }}</span>
+                            <span class="tag-count">{{ tag.post_count }}</span>
                         </span>
                     </a>
                     {% endfor %}
                 </div>
                 {% else %}
-                <div class="text-center py-5 text-muted">
+                <div class="text-center py-5 empty-state">
                     <i class="bi bi-inbox display-1"></i>
                     <h4 class="mt-3">暂无标签</h4>
                 </div>
@@ -39,16 +35,16 @@
         {% if tags %}
         <div class="card mt-4">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-list-ol"></i> 标签列表</h5>
+                <h5 class="mb-0"><i class="bi bi-list-ol me-2"></i>标签列表</h5>
             </div>
             <div class="card-body">
-                <div class="row"
+                <div class="row">
                     {% for tag in tags %}
                     <div class="col-md-4 col-lg-3 mb-3">
                         <a href="{{ url_for('forum.index', tag=tag.name) }}" class="text-decoration-none">
-                            <div class="d-flex justify-content-between align-items-center p-2 border rounded hover-shadow">
-                                <span class="badge" style="background-color: {{ tag.color }}">{{ tag.name }}</span>
-                                <span class="text-muted small">{{ tag.post_count }} 帖子</span>
+                            <div class="d-flex justify-content-between align-items-center p-2 tag-list-item">
+                                <span class="badge" style="background-color: {{ tag.color }}; color: #fff;">{{ tag.name }}</span>
+                                <span class="tag-list-count">{{ tag.post_count }} 帖子</span>
                             </div>
                         </a>
                     </div>
@@ -63,9 +59,80 @@
 
 {% block extra_css %}
 <style>
-    .hover-shadow:hover {
-        background-color: #f8f9fa;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    .tag-cloud-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .tag-cloud-link {
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .tag-cloud-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6em 1.2em;
+        border-radius: 25px;
+        font-weight: 600;
+        color: #ffffff !important;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+        border: 2px solid rgba(255,255,255,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .tag-cloud-badge:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+        filter: brightness(1.15);
+    }
+    
+    .tag-size-sm { font-size: 0.9rem; }
+    .tag-size-md { font-size: 1.1rem; }
+    .tag-size-lg { font-size: 1.35rem; }
+    .tag-size-xl { font-size: 1.7rem; }
+    
+    .tag-count {
+        background: rgba(0, 0, 0, 0.25);
+        padding: 0.15rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.75em;
+        font-weight: 700;
+    }
+    
+    .tag-list-item {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .tag-list-item:hover {
+        background: rgba(0, 212, 255, 0.1);
+        border-color: var(--primary);
+        box-shadow: 0 0 15px var(--primary-glow);
+    }
+    
+    .tag-list-count {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+    }
+    
+    .empty-state {
+        color: var(--text-secondary);
+    }
+    
+    .empty-state i {
+        opacity: 0.5;
+        color: var(--primary);
+    }
+    
+    .empty-state h4 {
+        color: var(--text-primary);
     }
 </style>
 {% endblock %}

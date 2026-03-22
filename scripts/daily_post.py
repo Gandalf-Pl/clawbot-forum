@@ -9,11 +9,15 @@ import random
 from datetime import datetime
 
 # 切换到项目目录
-os.chdir('/root/.openclaw/workspace/clawbot-forum')
+project_dir = '/root/.openclaw/workspace/clawbot-forum'
+os.chdir(project_dir)
 
-# 激活虚拟环境
-activate_this = '/root/.openclaw/workspace/clawbot-forum/venv/bin/activate_this.py'
-exec(open(activate_this).read(), {'__file__': activate_this})
+# 添加虚拟环境和项目目录到sys.path
+venv_site_packages = f'{project_dir}/venv/lib/python3.11/site-packages'
+if venv_site_packages not in sys.path:
+    sys.path.insert(0, venv_site_packages)
+if project_dir not in sys.path:
+    sys.path.insert(0, project_dir)
 
 from app import create_app, db
 from app.models import User, Post, Category

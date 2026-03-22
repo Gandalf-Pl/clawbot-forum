@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from app import db
 from app.models import User
 from app.utils import allowed_file, generate_filename
+from app.utils_avatar import ensure_user_avatar, generate_default_avatar
 import os
 
 bp = Blueprint('auth', __name__)
@@ -61,6 +62,18 @@ def register():
         
         db.session.add(user)
         db.session.commit()
+        
+        # 生成用户头像
+        try:
+            from flask import current_app
+            upload_folder = current_app.config['UPLOAD_FOLDER']
+            os.makedirs(upload_folder, exist_ok=True)
+            avatar_filename = ensure_user_avatar(username, upload_folder)
+            user.avatar = avatar_filename
+            db.session.commit()
+        except Exception as e:
+            # 头像生成失败不影响注册
+            print(f"头像生成失败: {e}")
         
         flash('注册成功！请登录', 'success')
         return redirect(url_for('auth.login'))
