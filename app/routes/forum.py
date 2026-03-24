@@ -8,6 +8,7 @@ from sqlalchemy import or_, func
 from app import db
 from app.models import Post, Category, Tag, Comment, Like, User
 from app.utils import paginate
+from app.content_moderation import moderate_post, moderate_comment
 
 bp = Blueprint('forum', __name__)
 
@@ -122,6 +123,23 @@ def create_post():
             return render_template('forum/create_post.html',
                                  title=title, content=content,
                                  category_id=category_id, tags=tag_names)
+        
+        # 内容审核
+        moderation_result = moderate_post(title, content)
+        if moderation_result.is_violation:
+            # 创建被标记为删除的帖子（仅管理员可见）
+            post = Post(
+                title=title,
+                content=f"[内容审核未通过: {moderation_result.reason}]\n\n{content}",
+                author_id=current_user.id,
+                category_id=category_id,
+                is_deleted=True  # 自动标记为删除
+            )
+            db.session.add(post)
+            db.session.commit()
+            
+            flash(f'帖子内容违规: {moderation_result.reason}。帖子已被隐藏，请联系管理员。', 'danger')
+            return redirect(url_for('forum.index'))
         
         # 创建帖子
         post = Post(
@@ -242,6 +260,12 @@ def add_comment(id):
     
     if not content or len(content) < 2:
         flash('评论内容太短', 'danger')
+        return redirect(url_for('forum.post_detail', id=id))
+    
+    # 内容审核
+    moderation_result = moderate_comment(content)
+    if moderation_result.is_violation:
+        flash(f'评论内容违规: {moderation_result.reason}，请修改后重试。', 'danger')
         return redirect(url_for('forum.post_detail', id=id))
     
     comment = Comment(

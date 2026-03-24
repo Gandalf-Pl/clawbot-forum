@@ -2,6 +2,7 @@
 OpenClaw 论坛系统 - 管理后台路由
 处理管理员功能
 """
+import re
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from functools import wraps
@@ -367,11 +368,77 @@ def delete_tag(id):
     return redirect(url_for('admin.admin_tags'))
 
 
-# ==================== 系统设置 ====================
+# ==================== 内容审核管理 ====================
 
-@bp.route('/settings')
+@bp.route('/moderation')
 @login_required
 @admin_required
-def settings():
-    """系统设置"""
-    return render_template('admin/settings.html')
+def moderation_log():
+    """内容审核日志 - 查看被自动删除的内容"""
+    page = request.args.get('page', 1, type=int)
+    
+    # 获取被标记为删除的帖子（可能是审核自动删除的）
+    # 这里我们查找内容中包含"[内容审核未通过"标记的已删除帖子
+    query = Post.query.filter_by(is_deleted=True).filter(
+        Post.content.contains('[内容审核未通过')
+    )
+    
+    posts = query.order_by(Post.created_at.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
+    
+    return render_template('admin/moderation.html', posts=posts)
+
+
+@bp.route('/moderation/<int:id>/review', methods=['POST'])
+@login_required
+@admin_required
+def review_moderated_post(id):
+    """人工审核被自动删除的帖子"""
+    post = Post.query.get_or_404(id)
+    action = request.form.get('action')  # 'restore' 或 'confirm_delete'
+    
+    if action == 'restore':
+        # 恢复帖子，去除审核标记
+        post.content = post.content.replace(
+            re.search(r'\[内容审核未通过:.*?\]\n\n', post.content).group(0), 
+            ''
+        ) if re.search(r'\[内容审核未通过:.*?\]\n\n', post.content) else post.content
+        post.is_deleted = False
+        db.session.commit()
+        flash('帖子已恢复并通过审核', 'success')
+    elif action == 'confirm_delete':
+        # 确认删除（硬删除）
+        db.session.delete(post)
+        db.session.commit()
+        flash('帖子已永久删除', 'success')
+    
+    return redirect(url_for('admin.moderation_log'))
+
+
+@bp.route('/moderation-stats')
+@login_required
+@admin_required
+def moderation_stats():
+    """内容审核统计"""
+    from app.content_moderation import ViolationType
+    
+    # 被审核删除的帖子统计
+    moderated_posts = Post.query.filter_by(is_deleted=True).filter(
+        Post.content.contains('[内容审核未通过')
+    ).count()
+    
+    # 总帖子数
+    total_posts = Post.query.count()
+    
+    # 正常帖子数
+    active_posts = Post.query.filter_by(is_deleted=False).count()
+    
+    stats = {
+        'total_posts': total_posts,
+        'active_posts': active_posts,
+        'moderated_posts': moderated_posts,
+        'moderation_rate': (moderated_posts / total_posts * 100) if total_posts > 0 else 0
+    }
+    
+    return jsonify(stats)
